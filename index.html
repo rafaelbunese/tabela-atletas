@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clube de Atletas - Busca</title>
+    <!-- Carrega o Tailwind CSS para um design responsivo e moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+
+    <div class="max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
+
+        <!-- Título da página -->
+        <h1 class="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-2">
+            Oportunidades em Clubes
+        </h1>
+        <p class="text-center text-gray-500 mb-8">
+            Encontre as posições procuradas por clubes de todo o Brasil.
+        </p>
+
+        <!-- Campo de busca -->
+        <div class="mb-6">
+            <input type="text" id="searchInput" placeholder="Buscar por ano, posição ou região..." class="w-full p-3 pl-10 text-gray-700 bg-gray-100 border border-gray-300 rounded-xl shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200" onkeyup="filterTable()">
+        </div>
+
+        <!-- Tabela responsiva -->
+        <div class="overflow-x-auto rounded-xl shadow-sm border border-gray-200">
+            <table class="w-full text-sm text-left text-gray-500">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">Ano de nascimento</th>
+                        <th scope="col" class="px-6 py-3">Posição procurada</th>
+                        <th scope="col" class="px-6 py-3">Região onde está o Clube</th>
+                    </tr>
+                </thead>
+                <tbody id="athleteTableBody">
+                    <!-- As linhas da tabela serão inseridas aqui via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <script>
+        // Dados da tabela, convertidos do seu texto original para um array de objetos JavaScript.
+        const athleteData = [
+            { ano: 2003, posicao: 'Centroavante', regiao: 'Sul do Estado de Santa Catarina' },
+            { ano: 2003, posicao: 'Extremo', regiao: 'Sul do Estado de Santa Catarina' },
+            { ano: 2003, posicao: 'Lateral esquerdo', regiao: 'Sul do Estado de Santa Catarina' },
+            { ano: 2003, posicao: 'Volante', regiao: 'Sul do Estado de Santa Catarina' },
+            { ano: 2003, posicao: 'Zagueiro', regiao: 'Sul do Estado de Santa Catarina' },
+            { ano: 2005, posicao: 'Centroavante', regiao: 'Capital na região Centro Oeste' },
+            { ano: 2005, posicao: 'Centroavante', regiao: 'Capital na região Norte' },
+            { ano: 2005, posicao: 'Goleiro', regiao: 'Capital na região Centro Oeste' },
+            { ano: 2005, posicao: 'Volante', regiao: 'Capital na região Centro Oeste' },
+            { ano: 2005, posicao: 'Volante', regiao: 'Capital na região Norte' },
+            { ano: 2005, posicao: 'Zagueiro', regiao: 'Capital na região Centro Oeste' },
+            { ano: 2006, posicao: 'Centroavante', regiao: 'Capital na região Centro Oeste' },
+            { ano: 2006, posicao: 'Goleiro', regiao: 'Capital na região Centro Oeste' },
+            { ano: 2006, posicao: 'Lateral direito', regiao: 'Interior do Estado de São Paulo' },
+            { ano: 2006, posicao: 'Volante', regiao: 'Capital na região Centro Oeste' },
+            { ano: 2006, posicao: 'Zagueiro', regiao: 'Capital na região Centro Oeste' },
+            { ano: 2007, posicao: 'Extremo', regiao: 'Interior do Estado de São Paulo' },
+            { ano: 2007, posicao: 'Lateral direito', regiao: 'Interior do Estado de São Paulo' },
+            { ano: 2007, posicao: 'Todas as posições', regiao: 'Região Metropolitana de Belo Horizonte' },
+            { ano: 2008, posicao: 'Centroavante', regiao: 'Interior do Estado de São Paulo' },
+            { ano: 2008, posicao: 'Goleiro', regiao: 'Interior do Estado de São Paulo' },
+            { ano: 2008, posicao: 'Goleiro', regiao: 'Interior do Estado de São Paulo' },
+            { ano: 2008, posicao: 'Zagueiro', regiao: 'Interior do Estado de São Paulo' },
+            { ano: 2009, posicao: 'Centroavante', regiao: 'Interior do Estado de São Paulo' },
+            { ano: 2009, posicao: 'Extremo canhoto', regiao: 'Interior do Estado de São Paulo' },
+            { ano: 2010, posicao: 'Goleiro', regiao: 'Interior do Estado de São Paulo' },
+            { ano: 2010, posicao: 'Zagueiro', regiao: 'Interior do Estado de São Paulo' },
+            { ano: 2010, posicao: 'Zagueiro', regiao: 'Interior do Estado de São Paulo' },
+            { ano: 2011, posicao: 'Goleiro', regiao: 'Interior do Estado de São Paulo' },
+            { ano: 2011, posicao: 'Lateral direito', regiao: 'Interior do Estado de São Paulo' },
+            { ano: 2011, posicao: 'Zagueiro', regiao: 'Interior do Estado de São Paulo' }
+        ];
+
+        const tableBody = document.getElementById('athleteTableBody');
+
+        /**
+         * Renderiza as linhas da tabela com base em um array de dados.
+         * @param {Array} dataToRender - O array de atletas a ser exibido na tabela.
+         */
+        function renderTable(dataToRender) {
+            // Limpa o conteúdo da tabela antes de renderizar
+            tableBody.innerHTML = '';
+            
+            if (dataToRender.length === 0) {
+                // Exibe uma mensagem se nenhum resultado for encontrado
+                const noResultsRow = document.createElement('tr');
+                noResultsRow.innerHTML = `<td colspan="3" class="px-6 py-4 text-center text-gray-400">Nenhum resultado encontrado.</td>`;
+                tableBody.appendChild(noResultsRow);
+                return;
+            }
+
+            // Cria e adiciona cada linha da tabela
+            dataToRender.forEach(athlete => {
+                const row = document.createElement('tr');
+                row.className = 'bg-white border-b hover:bg-gray-50 transition-colors duration-200';
+                row.innerHTML = `
+                    <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">${athlete.ano}</td>
+                    <td class="px-6 py-4">${athlete.posicao}</td>
+                    <td class="px-6 py-4">${athlete.regiao}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        /**
+         * Filtra a tabela com base no texto digitado no campo de busca.
+         */
+        function filterTable() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filteredData = athleteData.filter(athlete => {
+                // Converte todos os valores do objeto para string e busca o termo
+                return Object.values(athlete).some(value => 
+                    String(value).toLowerCase().includes(searchTerm)
+                );
+            });
+            renderTable(filteredData);
+        }
+
+        // Renderiza a tabela inicial ao carregar a página
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTable(athleteData);
+        });
+    </script>
+
+</body>
+</html>
